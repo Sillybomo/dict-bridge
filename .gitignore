@@ -3,3 +3,7 @@ my_sogou_words.txt
 build/
 obj/
 dexout/
+*.keystore
+*.jks
+*.keystore.jks
+gh_token*
