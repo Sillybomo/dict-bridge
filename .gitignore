@@ -1,0 +1,5 @@
+my_sogou_words.txt
+*.bak
+build/
+obj/
+dexout/
