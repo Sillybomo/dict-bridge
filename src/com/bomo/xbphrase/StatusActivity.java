@@ -249,7 +249,7 @@ public class StatusActivity extends Activity {
         String[] lines = text.split("\n");
         for (String line : lines) {
             line = line.replace("\r", "").replace("\uFEFF", "").trim();
-            if (line.isEmpty()) continue;
+            if (line.isEmpty() || line.startsWith("#")) continue;  // # 开头为注释行
             String[] p = line.split("\t");
             String w = (p.length >= 2 ? p[p.length - 1] : line).trim();
             if (w.isEmpty() || w.codePointCount(0, w.length()) > MAX_WORD_CP || hasCtrl(w)) {
