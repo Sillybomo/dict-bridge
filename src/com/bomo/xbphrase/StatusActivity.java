@@ -305,11 +305,30 @@ public class StatusActivity extends Activity {
                 }
                 if (done != null && done.startsWith("progress=")) {
                     show("导入中… " + done.substring(9));
-                } else if (waited > 12
-                        && su("ls '" + WT_DIR + "/cmd_wthist' 2>/dev/null").trim().isEmpty()) {
-                    show("❌ 命令文件被清理但无结果：引擎进程可能重启过，重开键盘再试一次。");
+                    continue;
+                }
+                if (done != null && !done.trim().isEmpty()) {
+                    // 引擎侧异常原文直传（FATAL 等），不再吞进通用文案
+                    show("引擎返回异常：\n" + done.trim()
+                            + "\n\n请连同微信输入法版本号反馈到仓库 issue。");
                     break;
-                } else if (waited > 12) {
+                }
+                if (waited > 12) {
+                    if (su("ls '" + WT_DIR + "/cmd_wthist' 2>/dev/null").trim().isEmpty()) {
+                        // cmd 已消失但 done 还没读到：可能撞上"写完果删命令"的竞态，
+                        // 延迟 3s 再读一次兜底，仍为空才判定引擎中断。
+                        try { Thread.sleep(3000); } catch (InterruptedException ignored) { break; }
+                        String fin = su("cat '" + WT_DIR + "/done_wthist.txt' 2>/dev/null");
+                        if (fin != null && !fin.trim().isEmpty()) {
+                            show("✅ 引擎结果：\n" + fin.trim());
+                        } else {
+                            show("❌ 命令被消费但引擎未产出结果，进程可能中途被杀。\n"
+                                    + "保持键盘弹出重试一次（重复词自动判重，安全）。\n"
+                                    + "手动核对：Android/data/com.tencent.wetype/files/"
+                                    + "done_wthist.txt");
+                        }
+                        break;
+                    }
                     show("等待引擎处理中（" + waited + "s）…\n提示：微信输入法需存活——"
                             + "随便点个输入框把键盘弹出来一次。");
                 }
